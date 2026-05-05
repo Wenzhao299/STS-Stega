@@ -1,49 +1,37 @@
 # STS-Stega
 
-Syndrome-Trellis Sampler for generative image steganography.
+Official implementation of **STS-Stega: Asymmetric Generative Image Steganography via Syndrome-Trellis Sampling in Diffusion Models**.
 
-This project combines DDPM-based image generation with syndrome-trellis sampling (STS). The main idea is an asymmetric steganographic workflow: embedding uses a diffusion model and GPU-side probability estimates, while extraction only needs the parity-check matrix and XOR operations.
+STS-Stega is a generative image steganography framework that combines denoising diffusion models with syndrome-trellis sampling. The sender uses the diffusion model to estimate pixel-level posterior probabilities and performs constrained sampling, while the receiver extracts the payload with only the stego image and a shared parity-check matrix.
 
-## Features
+## Highlights
 
-- Diffusion posterior probability extraction for pixel-level sampling.
-- Syndrome-Trellis Sampler with Numba-accelerated forward/backward trellis passes.
-- STC baseline sampler with multiple parity-check matrix construction methods.
-- Batch embedding/extraction scripts for generating cover/stego pairs.
-- Evaluation helpers for image quality and payload experiments.
+- **Asymmetric extraction.** Decoding does not require the diffusion model, GPU inference, or probability recomputation.
+- **Syndrome-trellis sampling for diffusion models.** Pixel posteriors are converted into context-conditional bit-plane probabilities for payload-constrained sampling.
+- **Bit-plane payload embedding.** RGB images are decomposed into 24 binary planes and embedded with entropy-aware payload allocation.
+- **Reproducible baselines.** The repository includes STS and STC samplers, batch generation scripts, and evaluation utilities.
 
-## Repository layout
+## Repository Structure
 
 ```text
 .
-├── guided_diffusion/          # DDPM implementation and model utilities
-├── evaluate/                  # Evaluation scripts
+├── guided_diffusion/          # Diffusion model implementation and utilities
+├── scripts/                   # Diffusion training and sampling entry points
+├── evaluate/                  # FID, PSNR, and SSIM evaluation scripts
 ├── H_matrix/                  # Precomputed parity-check matrices
 ├── ref_imgs/                  # Small reference image sets
-├── scripts/                   # Diffusion training/sampling scripts
 ├── stscp_sampler_new.py       # Core STS sampler
-├── stc_sampler.py             # STC sampler baseline
-├── stega_stscp_new.py         # STS embedding/extraction entry point
-├── stega_hybrid_new.py        # Legacy hybrid pipeline
-├── run_batch_hybrid_new.py    # Batch generation pipeline
-├── run_batch_stc.py           # STC batch pipeline
+├── stc_sampler.py             # STC baseline sampler
+├── stega_stscp_new.py         # Single-image STS embedding and extraction
+├── stega_hybrid_new.py        # Hybrid experimental pipeline
+├── run_batch_hybrid_new.py    # Batch STS generation and extraction
+├── run_batch_stc.py           # Batch STC baseline
 └── utils.py                   # Probability conversion and image helpers
 ```
 
-## What is intentionally not tracked
+## Installation
 
-The repository is configured to exclude large or generated local artifacts, including:
-
-- model checkpoints under `models/` (`*.pt`, `*.pth`, `*.ckpt`, etc.),
-- generated `output*` / `results*` experiment directories,
-- generated payload and message files,
-- local notes and assistant state files.
-
-Place downloaded model checkpoints in `models/` locally before running generation scripts.
-
-## Environment setup
-
-Create a Python environment and install the expected scientific Python stack:
+Create a Python environment and install the main dependencies:
 
 ```bash
 python -m venv .venv
@@ -51,61 +39,62 @@ source .venv/bin/activate
 pip install torch torchvision numpy scipy pillow tqdm numba mpi4py blobfile
 ```
 
-Depending on your CUDA version and GPU environment, install PyTorch from the official PyTorch index appropriate for your system.
+Install the PyTorch build that matches your CUDA driver and GPU environment. Model checkpoints are not included in this repository; place downloaded checkpoints under `models/` before running generation scripts.
 
-## Basic usage
+## Usage
 
-### Single-method scripts
-
-The core embedding pipeline is implemented in:
+Inspect the single-image STS entry point:
 
 ```bash
 python stega_stscp_new.py --help
 ```
 
-The legacy hybrid variant is available via:
-
-```bash
-python stega_hybrid_new.py --help
-```
-
-### Batch experiments
-
-Run the batch hybrid pipeline:
+Run a small batch STS experiment:
 
 ```bash
 python run_batch_hybrid_new.py \
   --base-samples ref_imgs/face \
   --model-path models/ffhq_10m.pt \
-  --num-images 10
+  --num-images 10 \
+  --output-root output_hybrid_parallel
 ```
 
-Run the STC baseline batch pipeline:
+Run the STC baseline:
 
 ```bash
 python run_batch_stc.py --help
 ```
 
-Outputs are written to local `output*` directories, which are ignored by git.
+Generated cover, stego, message, and metadata files are written to local `output*` directories.
 
-## Paper
+## Evaluation
 
-The ACM CCS-style manuscript source is under `paper_latex/`.
-
-A full LaTeX build normally requires:
+Image quality metrics:
 
 ```bash
-cd paper_latex
-pdflatex main
-bibtex main
-pdflatex main
-pdflatex main
+python evaluate/psnr_ssim_test.py --help
 ```
 
-Generated PDFs and auxiliary files are intentionally ignored.
+FID evaluation:
 
-## Notes
+```bash
+python evaluate/fid_test.py --help
+```
 
-- Extraction is designed to be black-box with respect to the diffusion model: it uses the parity-check matrix and stego bit planes.
-- The full experimental workflow requires local model checkpoints that are not included in this repository.
-- Large outputs and temporary evaluation caches should stay outside version control.
+The `evaluate/sts/` and `evaluate/stc/` directories include example JSONL outputs from STS and STC experiments.
+
+## Citation
+
+If you find this repository useful, please cite:
+
+```bibtex
+@inproceedings{sts_stega,
+  title = {STS-Stega: Asymmetric Generative Image Steganography via Syndrome-Trellis Sampling in Diffusion Models},
+  booktitle = {Proceedings of the ACM Conference on Computer and Communications Security},
+  year = {2026}
+}
+```
+
+## Acknowledgements
+
+This codebase builds on the DDPM implementation from guided diffusion and uses syndrome-trellis coding ideas for practical generative steganography.
