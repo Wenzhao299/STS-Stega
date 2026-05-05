@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude / local assistant state
+.claude/
+.superpowers/
+CLAUDE.md
+
+# Local backups and scratch space
+.backup/
+.repair.backup/
+tmp/
+*.bak
+*.tmp
+* copy.*
+
+# Markdown notes and generated reports
+*.md
+!README.md
+
+# Model checkpoints and large model weights
+models/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Experiment outputs and generated datasets
+output*/
+outputs*/
+results*/
+runs*/
+wandb/
+logs/
+*.log
+
+# Generated message/payload files
+message.txt
+message_*.txt
+*_embedded*.txt
+*_extracted*.txt
+
+# Evaluation caches and generated payload images
+evaluate/fid_cache/
+evaluate/payload/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.xdv
+
+# Generated paper PDF
+paper_latex
+
+# Add required manuscript figures with git add -f if needed.
